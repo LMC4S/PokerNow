@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PokerNow Hand History</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%99%A0%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --ink: #1c1f24; --muted: #6b7280; --line: #e5e7eb;
+    --accent: #2563eb; --pos: #15803d; --neg: #b91c1c; --chip: #eef2ff; --hover: #f3f4f6;
+    --felt: #1f6b3a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1216; --panel: #171b21; --ink: #e6e8eb; --muted: #9aa3ad; --line: #2a3039;
+            --accent: #60a5fa; --pos: #4ade80; --neg: #f87171; --chip: #1e2a44; --hover: #1f252d; --felt: #1b5a32; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { padding: 14px 22px; border-bottom: 1px solid var(--line); background: var(--panel); display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
+  header .spacer { flex: 1; }
+  main { padding: 18px 22px 60px; max-width: 1400px; margin: 0 auto; }
+  .drop { border: 2px dashed var(--line); border-radius: 12px; padding: 38px; text-align: center; color: var(--muted); background: var(--panel); cursor: pointer; transition: border-color .15s; }
+  .drop.over { border-color: var(--accent); color: var(--accent); }
+  .drop strong { color: var(--ink); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 16px 0 20px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px 11px; }
+  .card .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .7px; }
+  .card .v { font-size: 22px; font-weight: 650; margin-top: 3px; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
+  .card .s { color: var(--muted); font-size: 12px; margin-top: 1px; }
+  section { margin-top: 26px; }
+  h2 { font-size: 14px; margin: 0 0 10px; display: flex; align-items: baseline; gap: 10px; text-transform: uppercase; letter-spacing: .6px; }
+  h2 small { color: var(--muted); font-weight: normal; font-size: 12px; text-transform: none; letter-spacing: 0; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: auto; }
+  table { border-collapse: collapse; width: 100%; white-space: nowrap; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: 0; }
+  th:first-child, td:first-child { text-align: left; }
+  th { position: sticky; top: 0; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 12px; cursor: pointer; user-select: none; }
+  th.sorted { color: var(--accent); }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--hover); }
+  tbody tr.active { background: var(--chip); }
+  .pos { color: var(--pos); } .neg { color: var(--neg); }
+  .replay { padding: 16px 18px 18px; }
+  tr.replay-row, tr.replay-row:hover { background: var(--bg); cursor: default; }
+  tr.replay-row > td { padding: 0; text-align: left; }
+  tr.replay-row .replay { border-left: 3px solid var(--accent); margin: 6px 0 12px; }
+  .rp { margin-top: 12px; }
+  .rp-pods { display: flex; flex-wrap: wrap; gap: 10px; }
+  .rp-pod { flex: 1 1 158px; max-width: 215px; background: var(--panel); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px 9px; transition: opacity .15s, border-color .15s, box-shadow .15s; }
+  .rp-pod .top { display: flex; align-items: center; gap: 10px; }
+  .rp-pod .cards { display: flex; flex: none; }
+  .rp-pod .cards .pcard { margin: 0 3px 0 0; }
+  .rp-pod .info { min-width: 0; flex: 1; }
+  .rp-pod .nm { font-weight: 650; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rp-pod .nm .pos { display: inline-block; min-width: 20px; padding: 0 4px; border-radius: 4px; background: var(--chip); color: var(--muted); font-size: 10px; font-weight: 700; margin-right: 4px; vertical-align: 1px; text-align: center; }
+  .rp-pod .nm .pos.btn { background: var(--accent); color: #fff; }
+  .rp-pod .stk { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 1px; letter-spacing: -.2px; }
+  .rp-pod .status { margin-top: 8px; min-height: 24px; font-size: 13.5px; font-weight: 650; text-align: center; }
+  .rp-pod .status .bubble { background: var(--chip); border-radius: 999px; padding: 2px 12px; display: inline-block; font-variant-numeric: tabular-nums; }
+  .rp-pod .status .bubble.agg { background: rgba(208,58,52,.16); }
+  .rp-pod.folded { opacity: .32; }
+  .rp-pod.actor { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+  .rp-pod.win { border-color: var(--pos); box-shadow: 0 0 0 3px rgba(34,160,90,.22); }
+  .rp-pod.peekable { cursor: pointer; }
+  .rp-pod.peekable:hover { border-color: var(--accent); }
+    .pcard.back { background: repeating-linear-gradient(135deg, #444b58, #444b58 3px, #3a414e 3px, #3a414e 6px); color: transparent; }
+  .rp-center { position: relative; display: flex; align-items: center; justify-content: center; gap: 22px; margin: 12px 0 8px; min-height: 76px; background: linear-gradient(180deg, color-mix(in srgb, var(--felt) 14%, var(--panel)), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; }
+  .rp-center .street-lbl { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 700; min-width: 64px; text-align: right; }
+  .rp-center .pot-lbl { background: var(--chip); border-radius: 999px; padding: 7px 17px; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rp-center .pot-lbl small { display: block; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; text-align: center; }
+  .rp-toggle { position: absolute; right: 12px; top: 8px; font-size: 11.5px; color: var(--muted); user-select: none; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .rp-toggle input { accent-color: var(--accent); }
+  .rp-controls { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 4px; }
+  .rp-controls button { min-width: 38px; padding: 5px 0; font-size: 14px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); }
+  .rp-controls button:hover { background: var(--hover); filter: none; }
+  .rp-controls button.primary { background: var(--accent); color: #fff; border-color: transparent; min-width: 64px; }
+  .rp-controls input[type=range] { flex: 0 1 260px; accent-color: var(--accent); }
+  .rp-caption { text-align: center; font-size: 14px; min-height: 22px; margin-top: 4px; }
+  .rp-caption b { font-weight: 700; }
+  .rp-caption .stepno { color: var(--muted); font-size: 12px; margin-left: 8px; }
+  .replay .meta { display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline; }
+  .allin-pill { display: inline-block; background: #d03a34; color: #fff; border-radius: 4px; font-size: 10px; font-weight: 700; padding: 0 5px; margin-left: 5px; vertical-align: 1px; }
+  .replay h3 { margin: 0 0 6px; font-size: 14px; }
+  .replay .meta { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+  .street { margin: 10px 0 4px; font-weight: 600; font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; display: flex; align-items: center; gap: 8px; }
+  .act { padding: 2px 0 2px 8px; border-left: 2px solid var(--line); margin-left: 3px; }
+  .act .who { font-weight: 600; }
+  .act.agg { border-left-color: var(--neg); }
+  .act.call { border-left-color: var(--accent); }
+  .act.win { border-left-color: var(--pos); }
+  /* 4-colour deck: ♠ slate · ♥ red · ♦ blue · ♣ green, white text */
+  .pcard { display: inline-flex; align-items: center; justify-content: center; min-width: 33px; height: 24px; padding: 0 5px; margin: 1px 4px 1px 0; border-radius: 5px; color: #fff; font-weight: 700; font-size: 13.5px; letter-spacing: .3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; box-shadow: inset 0 -1px 0 rgba(0,0,0,.25); }
+  .pcard.s { background: #4b5563; }
+  .pcard.h { background: #d03a34; }
+  .pcard.d { background: #2f6fdb; }
+  .pcard.c { background: #1f8a4c; }
+  .pcard.lg { min-width: 38px; height: 28px; font-size: 15.5px; border-radius: 6px; }
+  .pcard.xl { min-width: 48px; height: 40px; font-size: 20px; border-radius: 8px; margin-right: 6px; box-shadow: inset 0 -2px 0 rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.25); }
+  .pcard.sm { min-width: 28px; height: 20px; font-size: 11.5px; border-radius: 4px; margin-right: 3px; }
+  .board-gap { display: inline-block; width: 7px; }
+  th.center, td.center { text-align: center; }
+  .seats { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); margin: 6px 0 4px; }
+  .seats b { color: var(--ink); }
+  .pill { display: inline-block; background: var(--chip); border-radius: 999px; padding: 1px 8px; font-size: 11.5px; }
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  input[type=text], select { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; font: inherit; }
+  button { background: var(--accent); color: #fff; border: 0; border-radius: 7px; padding: 6px 13px; font: inherit; cursor: pointer; transition: filter .12s; }
+  button:hover { filter: brightness(1.08); }
+  button:disabled { opacity: .55; cursor: default; }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  button.ghost:hover { background: var(--hover); filter: none; }
+  .chart { width: 100%; height: 260px; display: block; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; padding: 8px 12px; font-size: 12px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .muted { color: var(--muted); }
+  .fetchbox { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .fetchrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .progress { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .progress i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--chip); padding: 1px 4px; border-radius: 3px; }
+  .live-dot { color: #16a34a; animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+  .tag { display: inline-block; font-size: 10.5px; padding: 0 5px; border-radius: 3px; background: var(--chip); margin-left: 4px; vertical-align: 1px; }
+  .err { color: var(--neg); margin-top: 10px; }
+  .hidden { display: none; }
+  .tabs { display: flex; gap: 4px; margin: 2px 0 16px; border-bottom: 1px solid var(--line); }
+  .tabs button { background: transparent; color: var(--muted); border: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 8px 14px; font-weight: 600; }
+  .tabs button:hover { color: var(--ink); filter: none; background: transparent; }
+  .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .vpill { display: inline-block; border-radius: 999px; padding: 1px 9px; font-size: 11.5px; font-weight: 700; vertical-align: 2px; }
+  .vp-hot { background: rgba(217,119,6,.16); color: #c2620e; }
+  .vp-cold { background: rgba(37,99,235,.13); color: var(--accent); }
+  .vp-avg { background: var(--chip); color: var(--muted); }
+  .ins-cols { display: flex; gap: 14px; flex-wrap: wrap; }
+  .ins-cols > div { flex: 1 1 340px; min-width: 0; }
+  .ins-note { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  #ins-root tr.hero-row td { font-weight: 700; }
+  .flowrow { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-variant-numeric: tabular-nums; }
+  .flowrow .flow-who { flex: 0 0 92px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+  .flowrow .flow-who.to { text-align: left; color: var(--ink); font-weight: 600; }
+  .flowrow .flow-arrow { color: var(--muted); flex: none; }
+  .flowrow .flow-bar { flex: 1 1 auto; height: 10px; background: var(--hover); border-radius: 5px; overflow: hidden; }
+  .flowrow .flow-bar i { display: block; height: 100%; background: var(--accent); border-radius: 5px; }
+  .flowrow.hero-flow .flow-bar i { background: var(--pos); }
+  .flowrow .flow-amt { flex: 0 0 130px; text-align: right; font-weight: 650; }
+  .warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 12px; margin: 10px 0; font-size: 12.5px; }
+  @media (prefers-color-scheme: dark) { .warn { background: #2a1c0e; color: #fdba74; border-color: #7c2d12; } }
+  a.open-help { color: var(--accent); cursor: pointer; text-decoration: underline; }
+  dialog#help { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); max-width: 680px; width: calc(100vw - 40px); padding: 20px 24px 18px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  dialog#help::backdrop { background: rgba(0,0,0,.5); }
+  dialog#help h3 { margin: 0 0 2px; font-size: 16px; }
+  dialog#help .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 4px; }
+  .mode { border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px 12px; margin-top: 12px; }
+  .mode h4 { margin: 0 0 5px; font-size: 13px; }
+  .mode p, .mode ol { margin: 5px 0 0; color: var(--muted); font-size: 12.5px; }
+  .mode ol { padding-left: 20px; }
+  .mode ol li { margin-top: 3px; }
+  .mode b { color: var(--ink); }
+  .cookie-row { display: flex; gap: 8px; margin-top: 9px; align-items: center; }
+  .cookie-row input { flex: 1; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  #cookie-msg { font-size: 12.5px; margin-top: 7px; }
+  #cookie-msg.ok { color: var(--pos); }
+  .dlg-foot { display: flex; justify-content: flex-end; margin-top: 14px; }
+  #cred-line { margin-top: 6px; font-size: 12.5px; }
+  #cred-line b { color: var(--pos); }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="home-title" style="cursor:pointer" title="Back to home (add a game / archived games)">♠ PokerNow Hand History</h1>
+  <span class="muted" id="session-name"></span>
+  <span class="spacer"></span>
+  <span id="live-status" class="muted hidden" style="font-size:12.5px"></span>
+  <button class="ghost hidden" id="btn-live">● Go live</button>
+  <select id="session-select" class="hidden"></select>
+  <button class="ghost open-help" title="How to use this — and how to include your own hole cards" style="min-width:32px;padding:6px 0">?</button>
+  <button class="ghost" id="btn-new">⌂ Home</button>
+</header>
+<main>
+  <div id="offline" class="warn hidden">Lost contact with the local server. If you closed the <b>PokerNow.command</b> window, double-click it again (it reopens the UI in a new tab; this tab can be closed).</div>
+  <div id="upload">
+    <div class="fetchbox">
+      <div class="fetchrow">
+        <input type="text" id="game-url" placeholder="Paste a PokerNow game link, e.g. https://www.pokernow.com/games/…" style="flex:1;min-width:280px">
+        <label title="The session log adds joins/quits/rebuys and (when logged in) your hole cards; it roughly doubles fetch time."><input type="checkbox" id="fetch-log" checked> include session log</label>
+        <button id="btn-fetch">Fetch from PokerNow</button>
+        <button id="btn-fetch-live" class="ghost" title="Start polling this game every 15 s and keep the archive growing while you play">● Track live</button>
+      </div>
+      <div class="muted" style="margin-top:6px;font-size:12.5px">No PokerNow login needed — just the link. Pulls the ledger, every hand, and the session log (paced at PokerNow's rate limit — a few minutes for a long session; refreshes are incremental) and archives them locally so hands survive PokerNow's 5-day deletion. Everyone's shown cards are included; your own un-shown hole cards are not — <a class="open-help">see how to add them</a>.</div>
+      <div id="cred-line" class="hidden"><b>✓ Login cookie active</b> <span class="muted">— fetches and live tracking now include your own hole cards</span> · <a class="open-help">details</a> · <a id="cred-clear" style="color:var(--neg);cursor:pointer">remove</a></div>
+      <div id="fetch-progress" class="hidden" style="margin-top:8px"></div>
+      <div class="err hidden" id="fetch-err"></div>
+    </div>
+    <div id="archives" class="hidden" style="margin:14px 0">
+      <h2>Archived games <small>fetched earlier, stored on this machine</small></h2>
+      <div class="panel"><table id="archives-table"><thead><tr><th>Game</th><th>Hands</th><th>Log lines</th><th>Last refresh</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div id="drop" class="drop" style="margin-top:14px">
+      <div><strong>…or drop an export here</strong> (the session-log CSV, or the hands <code>.json</code> from the replayer), or click to choose a file.<br>
+      <span style="font-size:12.5px">Played in the game? The log CSV you download from PokerNow includes your own hole cards — drop it here after the session for your full personal insights.</span></div>
+      <input type="file" id="file" accept=".csv,.json,text/csv,application/json" class="hidden">
+      <div class="err hidden" id="upload-err"></div>
+    </div>
+  </div>
+
+  <div id="dash" class="hidden">
+    <div id="warn" class="warn hidden"></div>
+    <div id="files" class="muted hidden" style="font-size:12px;margin:8px 0"></div>
+    <div class="grid" id="summary-cards"></div>
+
+    <div class="tabs">
+      <button class="active" data-tab="overview">Overview</button>
+      <button data-tab="insights">Insights</button>
+    </div>
+
+    <div id="tab-insights" class="hidden">
+      <div id="ins-root" class="muted">Loading…</div>
+    </div>
+
+    <div id="tab-overview">
+    <section>
+      <h2>Players <small>click a column to sort · click a player to filter hands</small></h2>
+      <div class="panel" style="max-height:420px"><table id="players"><thead></thead><tbody></tbody></table></div>
+    </section>
+
+    <section>
+      <h2>Cumulative net <small>chips, by hand</small></h2>
+      <div class="panel">
+        <svg id="chart" class="chart" viewBox="0 0 1000 260" preserveAspectRatio="none"></svg>
+        <div class="legend" id="legend"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Hands <small id="hands-count"></small> <small>· click a column to sort</small></h2>
+      <div class="controls">
+        <input type="text" id="f-player" placeholder="Filter by player…" style="width:180px">
+        <select id="f-involve" class="hidden" title="How involved the filtered player was">
+          <option value="">any hand dealt</option>
+          <option value="vpip">put chips in</option>
+          <option value="flop">saw the flop</option>
+          <option value="showdown">went to showdown</option>
+          <option value="won">won the pot</option>
+        </select>
+        <input type="text" id="f-minpot" placeholder="Min pot" style="width:90px" inputmode="numeric">
+        <label><input type="checkbox" id="f-showdown"> showdown only</label>
+        <button class="ghost" id="f-clear">Clear</button>
+        <span id="hands-pager" style="margin-left:auto;display:flex;gap:8px;align-items:center"></span>
+      </div>
+      <div class="panel"><table id="hands"><thead></thead><tbody></tbody></table></div>
+    </section>
+    </div><!-- /tab-overview -->
+  </div>
+</main>
+
+<dialog id="help">
+  <h3>Three ways to use this</h3>
+  <div class="sub">Everything table-wide works without logging in. Your <b>own un-shown hole cards</b> are the only thing that needs more — here's how to add them.</div>
+
+  <div class="mode">
+    <h4>1 · Watch &amp; analyze any game <span class="tag">default — no login</span></h4>
+    <p>Paste a game link above. You get every hand, the boards, all cards shown at showdown, the ledger, player stats, luck-vs-the-table and money flow — for everyone at the table. The only thing missing: hole cards that were never shown (including your own).</p>
+  </div>
+
+  <div class="mode">
+    <h4>2 · After the session: upload your log <span class="tag">full personal insights — easiest</span></h4>
+    <p>Because <b>you</b> download it while logged in, PokerNow's own log export contains your hole cards for every hand.</p>
+    <ol>
+      <li>On your PokerNow game page, open the <b>log</b> (⋮ menu or the LOG panel) and click <b>Download full log</b> to save the CSV.</li>
+      <li>Drop that CSV on this app's home screen.</li>
+    </ol>
+    <p>That's it — the hole-card insights (cards dealt, flop hits, hand groups) unlock. No cookie, no setup.</p>
+  </div>
+
+  <div class="mode">
+    <h4>3 · Live tracking with your own cards <span class="tag">advanced — login cookie</span></h4>
+    <p>To see your hole cards <b>while</b> the app fetches or live-tracks, it must ask PokerNow as you. PokerNow identifies you by a browser cookie named <b>npt</b>:</p>
+    <ol>
+      <li>Open PokerNow in the browser where you're seated at (or logged into) the game.</li>
+      <li>Open developer tools — <b>⌘⌥I</b> on Mac, <b>F12</b> on Windows — and go to <b>Application</b> (Chrome/Edge) or <b>Storage</b> (Firefox/Safari) → <b>Cookies</b> → the PokerNow site.</li>
+      <li>Find the cookie named <code>npt</code>, copy its <b>value</b> (a long token), and paste it here:</li>
+    </ol>
+    <div class="cookie-row">
+      <input type="password" id="cookie-input" placeholder="paste the npt cookie value…" autocomplete="off">
+      <button id="cookie-save">Save</button>
+      <button class="ghost hidden" id="cookie-clear">Remove</button>
+    </div>
+    <div id="cookie-msg" class="hidden"></div>
+    <p style="margin-top:9px">🔒 Treat this like a password — it is your PokerNow identity. It is kept only in this app's memory on this machine, never written to disk, and only ever sent back to PokerNow. It's forgotten when the server restarts.</p>
+  </div>
+
+  <div class="dlg-foot"><button class="ghost" id="help-close">Close</button></div>
+</dialog>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const state = { sid: null, summary: null, gameId: null, hands: [], sort: { key: 'net', dir: -1 }, filterPlayer: '', selectedHand: null, liveVersion: 0, liveTimer: null, hero: null, handsSort: { key: 'number', dir: 1 }, replayHtml: null, rp: null, rpTimer: null, rpPeek: {}, tab: 'overview', insights: null, insightsFor: null, rpShowAll: (() => { try { return localStorage.getItem('rpShowAll') !== '0'; } catch { return true; } })() };
+  const COLORS = ['#2563eb','#dc2626','#16a34a','#d97706','#7c3aed','#0891b2','#db2777','#65a30d','#ea580c','#4b5563'];
+
+  // ---------- helpers ----------
+  const short = (k) => (k || '').split(' @ ')[0];
+  const fmt = (v, d = 1) => (v == null ? '–' : (typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(d)) : v));
+  const num = (v) => (v == null ? '–' : Math.round(v).toLocaleString('en-US'));
+  const durTxt = (m) => m == null ? '–' : (m >= 90 ? `${Math.floor(m / 60)} h ${String(Math.round(m % 60)).padStart(2, '0')} m` : `${Math.round(m)} min`);
+  const GAME_SHORT = { "No Limit Texas Hold'em": 'NLH', 'Pot Limit Omaha Hi': 'PLO', 'Pot Limit Omaha Hi/Lo (8 or Better)': 'PLO8', 'Pot Limit Omaha 5 Hi': 'PLO5', 'Pot Limit Omaha 5 Hi/Lo (8 or Better)': 'PLO5 HL' };
+  const gameShort = (gs) => (gs || []).map(g => GAME_SHORT[g] || g).join(', ');
+  const signed = (v) => {
+    if (v == null) return '–';
+    if (typeof v === 'number') return (v > 0 ? '+' : '') + Math.round(v).toLocaleString('en-US');
+    const f = parseFloat(v);
+    return (f > 0 ? '+' : '') + v;
+  };
+  const cls = (v) => (v > 0 ? 'pos' : v < 0 ? 'neg' : '');
+  const cardHtml = (c, size) => { if (!c) return ''; const r = c[0] === 'T' ? '10' : c[0]; const s = c[1]; const sym = {s:'♠',h:'♥',d:'♦',c:'♣'}[s]; return `<span class="pcard ${s}${size ? ' ' + size : ''}">${r}${sym}</span>`; };
+  const cardsHtml = (arr, size) => (arr || []).map(c => cardHtml(c, size)).join('');
+  const boardHtml = (arr, size) => { // group flop | turn | river visually
+    if (!arr || !arr.length) return '';
+    const parts = [arr.slice(0, 3), arr.slice(3, 4), arr.slice(4, 5)].filter(p => p.length);
+    return parts.map(p => cardsHtml(p, size)).join('<span class="board-gap"></span>');
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+
+  async function api(path, opts) {
+    let r;
+    try { r = await fetch(path, opts); }
+    catch (e) {
+      // Safari says "Load failed", Chrome "Failed to fetch": the local server is gone.
+      throw new Error(`cannot reach the local server at ${location.origin} — if you closed the PokerNow.command window (or the server was restarted on another port), double-click PokerNow.command again and use the tab it opens.`);
+    }
+    if (!r.ok) { let msg = r.statusText; try { msg = (await r.json()).detail || msg; } catch {} throw new Error(msg); }
+    return r.json();
+  }
+  // Banner when the server disappears (e.g. launcher window closed).
+  setInterval(async () => {
+    try { const r = await fetch('/api/health', { cache: 'no-store' }); if (!r.ok) throw 0; $('#offline').classList.add('hidden'); }
+    catch { $('#offline').classList.remove('hidden'); }
+  }, 5000);
+
+  // ---------- upload ----------
+  const uploadView = $('#upload'), drop = $('#drop'), fileInput = $('#file');
+  drop.addEventListener('click', (e) => { if (e.target.tagName !== 'INPUT') fileInput.click(); });
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e) => { const f = e.dataTransfer.files[0]; if (f) upload(f); });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) upload(fileInput.files[0]); fileInput.value = ''; });
+  const goHome = () => {
+    $('#dash').classList.add('hidden'); uploadView.classList.remove('hidden');
+    $('#session-name').textContent = ''; document.title = 'PokerNow Hand History';
+    history.replaceState(null, '', location.pathname);
+    refreshArchives();
+  };
+  $('#btn-new').addEventListener('click', goHome);
+  $('#home-title').addEventListener('click', goHome);
+
+  // ---------- help dialog & login cookie ----------
+  const help = $('#help');
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('.open-help');
+    if (a) { e.preventDefault(); refreshCredUI(); help.showModal(); }
+  });
+  $('#help-close').addEventListener('click', () => help.close());
+  help.addEventListener('click', (e) => { if (e.target === help) help.close(); }); // click on backdrop
+  async function refreshCredUI() {
+    let st = { set: false, source: null };
+    try { st = await api('/api/credentials'); } catch {}
+    $('#cred-line').classList.toggle('hidden', !st.set);
+    $('#cookie-clear').classList.toggle('hidden', !(st.set && st.source === 'ui'));
+    const msg = $('#cookie-msg');
+    if (st.set && msg.classList.contains('hidden')) {
+      msg.classList.remove('hidden'); msg.className = 'ok';
+      msg.textContent = st.source === 'env' ? '✓ A login cookie is already set via the POKERNOW_NPT environment variable.' : '✓ Cookie saved — new fetches and live tracking include your own hole cards.';
+    } else if (!st.set) { msg.classList.add('hidden'); msg.textContent = ''; }
+    return st;
+  }
+  $('#cookie-save').addEventListener('click', async () => {
+    const v = $('#cookie-input').value.trim(); if (!v) return;
+    const msg = $('#cookie-msg'); msg.classList.remove('hidden');
+    try {
+      await api('/api/credentials', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cookie: v }) });
+      $('#cookie-input').value = '';
+      msg.className = 'ok';
+      msg.innerHTML = '✓ Cookie saved — new fetches and live tracking include your own hole cards.'
+        + (state.gameId ? ` Hands fetched earlier only get them after a full re-download — <button class="ghost" id="cookie-backfill" style="padding:2px 10px">re-download this game now</button>` : '');
+      const bf = $('#cookie-backfill');
+      if (bf) bf.addEventListener('click', () => { const g = state.gameId; help.close(); goHome(); $('#game-url').value = g; startFetch(true); });
+      refreshCredUI();
+    } catch (err) { msg.className = 'err'; msg.textContent = err.message; }
+  });
+  $('#cookie-clear').addEventListener('click', async () => {
+    await api('/api/credentials', { method: 'DELETE' });
+    refreshCredUI();
+  });
+  $('#cred-clear').addEventListener('click', async () => {
+    await api('/api/credentials', { method: 'DELETE' });
+    refreshCredUI();
+  });
+  refreshCredUI();
+
+  // ---------- fetch from PokerNow ----------
+  $('#btn-fetch').addEventListener('click', () => startFetch());
+  $('#game-url').addEventListener('keydown', (e) => { if (e.key === 'Enter') startFetch(); });
+  async function startFetch(forceHands = false) {
+    const url = $('#game-url').value.trim(); if (!url) return;
+    $('#fetch-err').classList.add('hidden');
+    const prog = $('#fetch-progress'); prog.classList.remove('hidden'); prog.innerHTML = 'Starting…';
+    $('#btn-fetch').disabled = true;
+    try {
+      const job = await api('/api/fetch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, log: $('#fetch-log').checked, force_hands: forceHands }) });
+      await pollJob(job.id);
+    } catch (err) {
+      $('#fetch-err').textContent = 'Fetch failed: ' + err.message; $('#fetch-err').classList.remove('hidden'); prog.classList.add('hidden');
+    } finally { $('#btn-fetch').disabled = false; }
+  }
+  async function pollJob(id) {
+    const prog = $('#fetch-progress');
+    for (;;) {
+      const j = await api('/api/fetch/' + id);
+      let line = `<b>${j.stage}</b>`;
+      if (j.hands_total) line += ` · hands ${j.hands_done}/${j.hands_total}`;
+      if (j.log_lines) line += ` · log lines ${j.log_lines}`;
+      const pct = j.hands_total ? Math.round(100 * j.hands_done / j.hands_total) : (j.status === 'done' ? 100 : 5);
+      const msgs = (j.messages || []).slice(-2).map(esc).join(' · ');
+      prog.innerHTML = `${line}<div class="progress"><i style="width:${pct}%"></i></div><div class="muted" style="font-size:12px;margin-top:4px">${msgs}</div>`;
+      if (j.status === 'error') throw new Error(j.error || 'unknown error');
+      if (j.status === 'done') {
+        if (j.warnings && j.warnings.length) prog.innerHTML += `<div class="warn" style="margin-top:8px">${j.warnings.map(esc).join('<br>')}</div>`;
+        await loadSession(j.session_id); await refreshSessionList(); return;
+      }
+      await new Promise(r => setTimeout(r, 1500));
+    }
+  }
+  async function refreshArchives() {
+    let list = [];
+    try { list = await api('/api/archives'); } catch { return; }
+    $('#archives').classList.toggle('hidden', !list.length);
+    $('#archives-table tbody').innerHTML = list.map(a => `<tr data-g="${esc(a.game_id)}" title="Click to open"><td style="text-align:left">${esc(a.game_id)}</td><td>${a.hands ?? '–'}</td><td>${a.log_lines ?? '–'}</td><td>${a.last_refresh ? new Date(a.last_refresh).toLocaleString() : '–'}</td><td><button class="ghost btn-refresh">Refresh</button> <button class="ghost btn-live-a">● Live</button></td></tr>`).join('');
+    $('#archives-table').querySelectorAll('tr[data-g]').forEach(tr => {
+      const g = tr.dataset.g;
+      tr.addEventListener('click', async (e) => {
+        if (e.target.closest('button')) return;
+        const r = await api(`/api/archives/${g}/load`, { method: 'POST' });
+        await loadSession(r.id); await refreshSessionList();
+      });
+      tr.querySelector('.btn-refresh').addEventListener('click', () => { $('#game-url').value = g; startFetch(); });
+      tr.querySelector('.btn-live-a').addEventListener('click', () => { $('#game-url').value = g; $('#btn-fetch-live').click(); });
+    });
+  }
+
+  async function upload(file) {
+    $('#upload-err').classList.add('hidden');
+    const fd = new FormData(); fd.append('file', file);
+    try {
+      const res = await api('/api/sessions', { method: 'POST', body: fd });
+      await loadSession(res.id);
+      await refreshSessionList();
+    } catch (err) {
+      $('#upload-err').textContent = 'Upload failed: ' + err.message; $('#upload-err').classList.remove('hidden');
+    }
+  }
+
+  async function refreshSessionList() {
+    const list = await api('/api/sessions');
+    const sel = $('#session-select');
+    sel.innerHTML = list.map(s => `<option value="${s.id}" ${s.id === state.sid ? 'selected' : ''}>${esc(s.name)} (${s.hands} hands)</option>`).join('');
+    sel.classList.toggle('hidden', list.length < 2);
+  }
+  $('#session-select').addEventListener('change', (e) => loadSession(e.target.value));
+
+  // ---------- session ----------
+  async function loadSession(sid, opts = {}) {
+    const data = await api('/api/sessions/' + sid);
+    const keep = opts.keep && state.sid === sid;
+    state.sid = sid; state.summary = data.summary; state.gameId = data.game_id || null; state.hero = data.hero || null;
+    if (!keep) { state.filterPlayer = ''; state.selectedHand = null; }
+    $('#session-name').textContent = data.name;
+    uploadView.classList.add('hidden'); $('#dash').classList.remove('hidden');
+    renderSummary(); renderPlayers(); renderChart();
+    if (!keep) { $('#f-player').value = ''; $('#f-minpot').value = ''; $('#f-showdown').checked = false; state.selectedHand = null; state.replayHtml = null; }
+    state.insightsFor = null;
+    if (state.tab === 'insights') loadInsights();
+    await loadHands();
+    if (keep && state.selectedHand != null) await openHand(state.selectedHand);
+    history.replaceState(null, '', '#' + sid);
+    updateLiveUI();
+  }
+
+  // ---------- live tracking ----------
+  $('#btn-live').addEventListener('click', async () => {
+    if (!state.gameId) return;
+    const st = await api('/api/live/' + state.gameId);
+    if (st.running) { await api('/api/live/' + state.gameId, { method: 'DELETE' }); }
+    else { await api('/api/live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: state.gameId }) }); }
+    updateLiveUI();
+  });
+  $('#btn-fetch-live').addEventListener('click', async () => {
+    const url = $('#game-url').value.trim(); if (!url) return;
+    $('#fetch-err').classList.add('hidden'); $('#btn-fetch-live').disabled = true;
+    try {
+      const st = await api('/api/live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+      const prog = $('#fetch-progress'); prog.classList.remove('hidden'); prog.innerHTML = 'Live tracker started — first poll in progress…';
+      // wait until the first poll produced a session
+      for (let i = 0; i < 400; i++) {
+        const cur = await api('/api/live/' + st.game_id);
+        if (cur.version > 0) { await loadSession(cur.session_id); await refreshSessionList(); return; }
+        if (cur.last_error) prog.innerHTML = 'Live tracker: ' + esc(cur.last_error) + ' (retrying)';
+        else prog.innerHTML = `Live tracker: ${cur.polls} poll(s)… ${(cur.messages || []).slice(-1).map(esc).join('')}`;
+        await new Promise(r => setTimeout(r, 1500));
+      }
+    } catch (err) { $('#fetch-err').textContent = 'Live failed: ' + err.message; $('#fetch-err').classList.remove('hidden'); }
+    finally { $('#btn-fetch-live').disabled = false; }
+  });
+  async function updateLiveUI() {
+    clearInterval(state.liveTimer); state.liveTimer = null;
+    const btn = $('#btn-live'), lbl = $('#live-status');
+    if (!state.gameId) { btn.classList.add('hidden'); lbl.classList.add('hidden'); return; }
+    btn.classList.remove('hidden');
+    const st = await api('/api/live/' + state.gameId);
+    state.liveVersion = st.version || 0;
+    if (!st.running) { btn.textContent = '● Go live'; lbl.classList.add('hidden'); return; }
+    btn.textContent = '■ Stop live';
+    lbl.classList.remove('hidden');
+    const render = (s) => {
+      const ago = s.last_poll_at ? Math.round((Date.now() - new Date(s.last_poll_at)) / 1000) + 's ago' : 'pending';
+      lbl.innerHTML = `<span class="live-dot">●</span> live · ${s.hands} hands · last poll ${ago}${s.last_error ? ' · <span class="neg">' + esc(s.last_error) + '</span>' : ''}`;
+    };
+    render(st);
+    state.liveTimer = setInterval(async () => {
+      try {
+        const cur = await api('/api/live/' + state.gameId);
+        render(cur);
+        if (!cur.running) { updateLiveUI(); return; }
+        if (cur.version !== state.liveVersion) { state.liveVersion = cur.version; await loadSession(state.sid, { keep: true }); }
+      } catch {}
+    }, 4000);
+  }
+
+  function renderSummary() {
+    const s = state.summary;
+    const cards = [
+      ['Hands', num(s.hands), s.hands_per_hour ? `≈${s.hands_per_hour} per hour` : ''],
+      ['Duration', durTxt(s.duration_minutes), s.started_at ? 'started ' + new Date(s.started_at).toLocaleString([], { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''],
+      ['Blinds', `${fmt(s.small_blind)}/${fmt(s.big_blind)}`, gameShort(s.game_types)],
+      ['Avg pot', num(s.avg_pot), s.big_blind && s.avg_pot ? `${(s.avg_pot / s.big_blind).toFixed(1)} bb` : ''],
+      ['Biggest pot', num(s.biggest_pot), s.biggest_pot_hand ? `hand #${s.biggest_pot_hand}` : ''],
+      ['Saw flop', fmt(s.flop_pct) + '%', `showdown ${fmt(s.showdown_pct)}%`],
+      ['Raised pots', fmt(s.raised_pot_pct) + '%', `3-bet+ ${fmt(s.threebet_pot_pct)}% · limped ${fmt(s.limp_pot_pct)}%`],
+    ];
+    document.title = ($('#session-name').textContent || 'PokerNow') + ' · PokerNow Hand History';
+    if (state.gameId) { api('/api/archives/' + state.gameId + '/files').then(f => { $('#files').classList.remove('hidden'); $('#files').innerHTML = `Archive folder: <code>${esc(f.dir)}</code> · ${Object.keys(f.files).filter(k => ['summary.md','stats.json','hands.csv','players.csv'].includes(k)).map(k => '<code>' + k + '</code>').join(' ')} regenerated after every update`; }).catch(() => $('#files').classList.add('hidden')); } else $('#files').classList.add('hidden');
+    $('#summary-cards').innerHTML = cards.map(([k, v, sub]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub || '&nbsp;'}</div></div>`).join('');
+    const w = $('#warn');
+    if (s.unparsed_lines) { w.textContent = `${s.unparsed_lines} log line(s) were not understood by the parser; stats may be slightly off. See /api/sessions/${state.sid}/unparsed.`; w.classList.remove('hidden'); }
+    else w.classList.add('hidden');
+  }
+
+  const PCOLS = [
+    ['name','Player'], ['hands','Hands'], ['net','Net'], ['net_bb','Net (bb)'], ['bb_per_100','bb/100'],
+    ['vpip','VPIP%'], ['pfr','PFR%'], ['three_bet','3-Bet%'], ['af','AF'], ['wtsd_pct','WTSD%'], ['wsd_pct','W$SD%'],
+    ['cbet_pct','C-Bet%'], ['fold_to_cbet_pct','Fold→CB%'], ['win_pct','Won%'], ['all_ins','All-ins'], ['biggest_pot_won','Biggest pot'],
+  ];
+  function renderPlayers() {
+    const { key, dir } = state.sort;
+    const rows = [...state.summary.players].sort((a, b) => {
+      const av = a[key], bv = b[key];
+      if (av == null && bv == null) return 0; if (av == null) return 1; if (bv == null) return -1;
+      return (typeof av === 'string' ? av.localeCompare(bv) : av - bv) * dir;
+    });
+    $('#players thead').innerHTML = '<tr>' + PCOLS.map(([k, l]) => `<th data-k="${k}" class="${k === key ? 'sorted' : ''}">${l}${k === key ? (dir < 0 ? ' ▼' : ' ▲') : ''}</th>`).join('') + '</tr>';
+    $('#players tbody').innerHTML = rows.map(p => `<tr data-p="${esc(p.player)}" class="${state.filterPlayer === p.player ? 'active' : ''}">` + PCOLS.map(([k]) => {
+      let v = p[k];
+      if (k === 'af' && v >= 999) v = '∞';
+      if (k === 'name') {
+        const aka = (p.aka && p.aka.length) ? ` <span class="muted" style="font-weight:normal">aka ${p.aka.map(esc).join(', ')}</span>` : '';
+        return `<td title="${esc(p.player)}">${esc(v)}${aka}</td>`;
+      }
+      const c = (k === 'net' || k === 'net_bb' || k === 'bb_per_100') ? cls(p[k]) : '';
+      const txt = (k === 'net' || k === 'net_bb' || k === 'bb_per_100') ? signed(fmt(v)) : (k === 'biggest_pot_won' || k === 'hands' ? num(v) : fmt(v));
+      return `<td class="${c}">${txt}</td>`;
+    }).join('') + '</tr>').join('');
+    $('#players thead').querySelectorAll('th').forEach(th => th.addEventListener('click', () => {
+      const k = th.dataset.k;
+      state.sort = { key: k, dir: state.sort.key === k ? -state.sort.dir : (k === 'name' ? 1 : -1) };
+      renderPlayers();
+    }));
+    $('#players tbody').querySelectorAll('tr').forEach(tr => tr.addEventListener('click', () => {
+      const p = tr.dataset.p;
+      state.filterPlayer = state.filterPlayer === p ? '' : p;
+      $('#f-player').value = state.filterPlayer ? short(state.filterPlayer) : '';
+      renderPlayers(); loadHands();
+    }));
+  }
+
+  function renderChart() {
+    const players = state.summary.players;
+    const svg = $('#chart'); const W = 1000, H = 260, padL = 10, padR = 10, padT = 12, padB = 18;
+    const series = players.map((p, i) => {
+      let acc = 0; const pts = [[0, 0]];
+      p.hand_numbers.forEach((n, j) => { acc += p.net_by_hand[j]; pts.push([n, acc]); });
+      return { name: p.name, color: COLORS[i % COLORS.length], pts };
+    });
+    const allX = series.flatMap(s => s.pts.map(p => p[0])), allY = series.flatMap(s => s.pts.map(p => p[1]));
+    const minX = 0, maxX = Math.max(1, ...allX), minY = Math.min(0, ...allY), maxY = Math.max(1, ...allY);
+    const sx = (x) => padL + (x - minX) / (maxX - minX || 1) * (W - padL - padR);
+    const sy = (y) => padT + (maxY - y) / (maxY - minY || 1) * (H - padT - padB);
+    let out = `<line x1="${padL}" x2="${W - padR}" y1="${sy(0)}" y2="${sy(0)}" stroke="currentColor" stroke-opacity=".25" stroke-dasharray="4 4"/>`;
+    series.forEach(s => {
+      const d = s.pts.map((p, i) => (i ? 'L' : 'M') + sx(p[0]).toFixed(1) + ' ' + sy(p[1]).toFixed(1)).join(' ');
+      out += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+    });
+    out += `<text x="${padL}" y="${padT - 2}" font-size="11" fill="currentColor" opacity=".6">${maxY.toLocaleString('en-US')}</text>`;
+    out += `<text x="${padL}" y="${H - 4}" font-size="11" fill="currentColor" opacity=".6">${minY.toLocaleString('en-US')}</text>`;
+    out += `<text x="${W - padR}" y="${H - 4}" font-size="11" fill="currentColor" opacity=".6" text-anchor="end">hand ${maxX}</text>`;
+    svg.innerHTML = out;
+    $('#legend').innerHTML = series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)} <b class="${cls(s.pts.at(-1)[1])}">${signed(s.pts.at(-1)[1])}</b></span>`).join('');
+  }
+
+  // ---------- tabs & insights ----------
+  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
+    state.tab = b.dataset.tab;
+    $('#tab-overview').classList.toggle('hidden', state.tab !== 'overview');
+    $('#tab-insights').classList.toggle('hidden', state.tab !== 'insights');
+    if (state.tab === 'insights') loadInsights();
+  }));
+
+  async function loadInsights() {
+    if (!state.sid) return;
+    const key = state.sid + ':' + (state.summary ? state.summary.hands : 0);
+    if (state.insightsFor === key && state.insights) { renderInsights(); return; }
+    if (!state.insights) $('#ins-root').innerHTML = '<div class="muted" style="padding:20px">Computing…</div>';
+    try {
+      state.insights = await api(`/api/sessions/${state.sid}/insights`);
+      state.insightsFor = key;
+      renderInsights();
+    } catch (e) {
+      $('#ins-root').innerHTML = `<div class="err">Insights failed: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderInsights() {
+    const d = state.insights;
+    if (!d) return;
+    const bb = d.big_blind;
+    const inBB = (v) => bb ? (v / bb) : null;
+    const bbTxt = (v) => bb ? `${signed((v / bb).toFixed(1))} bb` : num(v);
+    const pct = (v, dd = 1) => (100 * v).toFixed(dd) + '%';
+    const verdict = (z, hot = 'ran hot', cold = 'ran cold', avg = '≈ expected') =>
+      Math.abs(z) < 1.96 ? `<span class="vpill vp-avg">${avg}</span>` : (z > 0 ? `<span class="vpill vp-hot">${hot}</span>` : `<span class="vpill vp-cold">${cold}</span>`);
+    const pTxt = (p) => `p = ${p < 0.0001 ? '<0.0001' : p}`;
+    let html = '';
+
+    // ---- luck · situations (frequency luck, hero only) + your game (stashed for later) ----
+    let gameHtml = '';
+    if (!d.hero || !d.hero_cards_known) {
+      html += `<div class="warn">Situation-luck and hand-group stats need your own hole cards. Two ways to unlock them: drop the log CSV you download from PokerNow onto the home screen after the session, or add your login cookie and re-download this game — <a class="open-help">how?</a> Money-luck and money-flow stats below work from showdown-revealed cards only.</div>`;
+    } else {
+      const q = d.quality, fh = d.flop_hit, st = d.sets;
+      const cov = d.hero_cards_known < d.hero_dealt ? ` <span class="muted">(cards known for ${d.hero_cards_known}/${d.hero_dealt} hands — showdown-biased sample!)</span>` : '';
+      html += `<section><h2>Luck · situations <small>· how often the deck favored ${esc(short(d.hero))} · scored as frequencies, not chips · ${d.hero_cards_known} hands${cov}</small></h2><div class="grid">`;
+      html += `<div class="card"><div class="k">Cards dealt</div><div class="v">${pct(q.mean_eq)} ${verdict(q.z, 'above average', 'below average')}</div><div class="s">avg strength vs a random deal (${pct(q.null_mean)}) · z = ${q.z}, ${pTxt(q.p)}</div></div>`;
+      if (fh) html += `<div class="card"><div class="k">Flop hit rate</div><div class="v">${pct(fh.rate)} ${verdict(fh.z)}</div><div class="s">${fh.hit}/${fh.n} hit vs ${fh.expected} expected (${pct(fh.expected_rate)}) · z = ${fh.z}, ${pTxt(fh.p)}</div></div>`;
+      if (st) html += `<div class="card"><div class="k">Sets flopped</div><div class="v">${st.flop_set}/${st.saw_flop} ${verdict(st.flop_p < 0.05 ? (st.flop_set > st.flop_expected ? 2 : -2) : 0)}</div><div class="s">expected ${st.flop_expected} · ${pTxt(st.flop_p)} · those hands netted <b class="${cls(st.flop_set_net)}">${signed(st.flop_set_net)}</b></div></div>`;
+      html += `</div>`;
+      html += `<div class="ins-cols"><div><div class="panel"><table><thead><tr><th>Premium category</th><th>Dealt</th><th>Expected</th><th>p-value</th></tr></thead><tbody>`;
+      html += q.categories.map(c => `<tr><td>${esc(c.name)}</td><td>${c.observed}</td><td>${c.expected}</td><td class="${c.p < 0.05 ? (c.observed > c.expected ? 'pos' : 'neg') : ''}">${c.p}</td></tr>`).join('');
+      html += `</tbody></table></div><div class="ins-note">Two-sided exact binomial tests vs a random deal. Most dealt: ${q.top_classes.map(([c, n2]) => `${esc(c)}×${n2}`).join(', ')}</div></div>`;
+      html += `<div><div class="ins-note" style="margin-top:0">This panel measures <b>how often</b> favorable things happened — good cards dealt, flops hit, sets made — against their theoretical rates. Cashing those situations in through betting is strategy, so it is deliberately not scored in chips here: pricing it would mean guessing how the betting would have gone on a blank runout. The chips-only gamble component is scored separately below, as <b>Luck · money</b>.<br><b>Read the badges with care:</b> this panel runs ~9 tests at once, so one nominally significant result per session is roughly what chance alone produces; badges light only beyond |z| ≈ 2, and the set test is a subset of the hit-rate test — when both glow it is largely the same few hands counted twice.</div></div></div></section>`;
+
+      // your game: whole-hand paid/received/net, by starting-hand group and by flop strength
+      const G = d.groups || {}, FS = d.flop_strength || {};
+      const GLAB = { strong: 'Strong (TT+ / AK / AQs)', pairs_small: 'Pairs 22–99', broadway: 'Two broadway (both ≥ T)', other: 'Everything else' };
+      const FSLAB = { two_pair_plus: 'Two pair or better', top_pair: 'Top pair / overpair', weak_pair: 'Middle / weak pair', no_pair: 'No pair (air & draws)' };
+      const ledgerTable = (firstCol, LAB, rows, countCell) => {
+        let t = `<div class="panel"><table><thead><tr><th>${firstCol}</th><th>Hands</th><th>Paid</th><th>Received</th><th>Net</th><th>bb/hand</th></tr></thead><tbody>`;
+        const tot = { n: 0, paid: 0, received: 0, net: 0 };
+        t += Object.keys(LAB).map(k => {
+          const s = rows[k] || {};
+          const paid = s.paid || 0, rec = s.received || 0, net = s.net || 0;
+          tot.n += countCell(s).n; tot.paid += paid; tot.received += rec; tot.net += net;
+          return `<tr><td>${LAB[k]}</td><td>${countCell(s).txt}</td><td>${num(paid)}</td><td>${num(rec)}</td><td class="${cls(net)}">${signed(net)}</td><td class="${cls(net)}">${s.bb_per_hand != null ? signed(s.bb_per_hand.toFixed(2)) : '–'}</td></tr>`;
+        }).join('');
+        t += `<tr style="border-top:2px solid var(--line)"><td><b>Total</b></td><td><b>${tot.n}</b></td><td><b>${num(tot.paid)}</b></td><td><b>${num(tot.received)}</b></td><td class="${cls(tot.net)}"><b>${signed(tot.net)}</b></td><td></td></tr>`;
+        return t + `</tbody></table></div>`;
+      };
+      gameHtml = `<section><h2>Your game <small>· whole-hand money: what you paid in, what the pots paid back</small></h2><div class="ins-cols">`;
+      gameHtml += `<div>` + ledgerTable('By starting hand (played)', GLAB, G,
+        (s) => ({ n: s.played || 0, txt: `${s.played || 0}/${s.dealt || 0}${s.played_pct != null ? ` <span class="muted">(${s.played_pct}%)</span>` : ''}` }));
+      gameHtml += `<div class="ins-note">Hands you voluntarily played, whole-hand accounting: Paid = every chip in (blinds included), Received = collected from pots, Net = the difference. The Total differs from your session net only by hands you didn't choose to play — blinds folded and free big-blind checks.</div></div>`;
+      gameHtml += `<div>` + ledgerTable('By flop made hand', FSLAB, FS, (s) => ({ n: s.hands || 0, txt: String(s.hands || 0) }));
+      gameHtml += `<div class="ins-note">Same whole-hand accounting over every flop you saw, bucketed by your made hand <b>on the flop</b> (draws count as what they currently are). This sample differs from the left table's: it includes free big-blind flops and excludes played hands that ended preflop, so the two Totals need not match. Small samples — one big pot can dominate a row. Your IP/OOP split lives in the Position section below.</div></div></div></section>`;
+    }
+
+    // ---- run-good meter ----
+    const luckRows = Object.entries(d.luck || {}).sort((a, b2) => b2[1].luck - a[1].luck);
+    if (luckRows.length) {
+      html += `<section><h2>Luck · money <small>· gamble outcomes on chips already in the middle · all players, from showdown-revealed cards</small></h2><div class="panel"><table><thead><tr><th>Player</th><th>Net</th><th>Measured SDs</th><th>Money luck</th><th>All-in hands (luck)</th><th>Setups</th><th>Luck-adj net</th></tr></thead><tbody>`;
+      html += luckRows.map(([p, a]) => `<tr class="${p === d.hero ? 'hero-row' : ''}"><td>${esc(short(p))}${p === d.hero ? ' <span class="tag">you</span>' : ''}</td><td class="${cls(a.net)}">${signed(a.net)}</td><td>${a.measured}</td><td class="${cls(a.luck)}" title="${a.luck_bb != null ? signed(a.luck_bb) + ' bb' : ''}">${signed(a.luck)}</td><td>${a.allin_n}${a.allin_n ? ` <span class="${cls(a.allin_luck)}">(${signed(a.allin_luck)})</span>` : ''}</td><td>${a.setup_n}${a.setup_n ? ` <span class="neg">(${signed(a.setup_chips)})</span>` : ''}</td><td class="${cls(a.adjusted_net)}">${signed(a.adjusted_net)}</td></tr>`).join('');
+      html += `</tbody></table></div><div class="ins-note"><b>Money luck</b>: pure gamble outcome — for each flop/turn/river card, (equity after − equity before) × the pot at that moment, summed. Only money already in the middle rides on a card: a rivered draw after calling a small bet scores as small luck here (the favorable situation itself belongs to Luck · situations above), while the same river with stacks already in scores in full. Zero-sum across the table. <b>What it cannot see:</b> this is luck <i>among revealed showdowns</i> — a scare card that makes you fold, and any mucked showdown, never gets scored — so <b>Luck-adj net</b> (= net − money luck, nothing else) is "net minus showdown gamble outcomes", not a full skill measure. <b>Measured SDs</b>: the scoreable showdowns (2+ hands revealed). <b>All-in hands (luck)</b>: the whole-hand luck of hands where that player was all-in (including swings from before the all-in). <b>Setups</b> is the can't-catch-a-break count, not part of the arithmetic: measured showdowns lost ≥ 40 bb while holding a real hand (top pair or better — preflop JJ+/AK) when the money went in. It counts both beats (was ahead, got outdrawn — also inside money luck, so don't subtract setups from adjusted net) and coolers (ran into a monster — priced nowhere else). Read it against Luck-adj net: adjusted losses that are mostly setups mean the player got run over; mostly <i>not</i> setups means the damage was self-inflicted.</div></section>`;
+    }
+    // ---- table-wide position ledger (needs no hole cards) ----
+    const PT = d.position_table;
+    if (PT && (PT.ip.hands || PT.oop.hands)) {
+      const pc = (k, lab) => { const g = PT[k]; return `<div class="card"><div class="k">${lab}</div><div class="v ${cls(g.net)}">${signed(g.net)}</div><div class="s">${g.hands} player-hands · ${g.bb_per_hand != null ? signed(g.bb_per_hand.toFixed(2)) + ' bb/hand' : '–'}</div></div>`; };
+      html += `<section><h2>Position <small>· every player, every flop seen — no hole cards needed</small></h2><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));max-width:560px">${pc('ip', 'In position (last to act)')}${pc('oop', 'Out of position')}</div>`;
+      const PP = d.position_players || {};
+      const ppRows = Object.entries(PP).sort((a, b2) => (b2[1].ip.net + b2[1].oop.net) - (a[1].ip.net + a[1].oop.net));
+      if (ppRows.length) {
+        const half = (g) => `<td>${g.hands}</td><td class="${cls(g.net)}">${signed(g.net)}</td><td class="${cls(g.net)}">${g.bb_per_hand != null ? signed(g.bb_per_hand.toFixed(2)) : '–'}</td>`;
+        html += `<div class="panel" style="margin-top:10px"><table><thead><tr><th>Player</th><th>IP hands</th><th>IP net</th><th>IP bb/hand</th><th>OOP hands</th><th>OOP net</th><th>OOP bb/hand</th></tr></thead><tbody>`;
+        html += ppRows.map(([p2, g]) => `<tr class="${p2 === d.hero ? 'hero-row' : ''}"><td>${esc(short(p2))}${p2 === d.hero ? ' <span class="tag">you</span>' : ''}</td>${half(g.ip)}${half(g.oop)}</tr>`).join('');
+        html += `</tbody></table></div>`;
+      }
+      html += `<div class="ins-note">Net chips won when acting last postflop (IP) vs earlier (OOP), across all ${PT.ip.hands + PT.oop.hands} flop-seen player-hands. <b>This is a ledger, not a measurement of positional skill:</b> the OOP pool carries the blind tax and forced defends with weak hands, while the IP pool holds freely chosen (stronger) ranges — so everyone looks better IP, and the gap mixes position, range and blind money. Judge a player's OOP number against the table's, not against zero. IP and OOP don't sum to zero (preflop folders' blinds are in these pots), and per-player samples are small — one big pot can dominate a row.</div></section>`;
+    }
+
+    html += gameHtml;
+
+    // ---- money flow: biggest net pipelines, at a glance ----
+    const flow = d.flow || {};
+    const names = [...new Set([...Object.keys(flow), ...Object.values(flow).flatMap(o => Object.keys(o))])];
+    if (names.length > 1) {
+      const get = (w, l) => (flow[w] && flow[w][l]) || 0;
+      const pipes = [];
+      for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
+        const net = Math.round(get(names[i], names[j]) - get(names[j], names[i]));
+        if (net) pipes.push(net > 0 ? { from: names[j], to: names[i], v: net } : { from: names[i], to: names[j], v: -net });
+      }
+      pipes.sort((a, b2) => b2.v - a.v);
+      const minShow = bb ? 5 * bb : 0;
+      const shown = pipes.filter((p2, i) => p2.v >= minShow || i < 5).slice(0, 12);
+      const maxV = shown.length ? shown[0].v : 1;
+      html += `<section><h2>Money flow <small>· the biggest net pipelines this session</small></h2><div class="panel" style="padding:12px 16px">`;
+      html += shown.map(p2 => {
+        const hero2 = p2.from === d.hero || p2.to === d.hero;
+        return `<div class="flowrow${hero2 ? ' hero-flow' : ''}">
+          <span class="flow-who">${esc(short(p2.from))}</span><span class="flow-arrow">⟶</span><span class="flow-who to">${esc(short(p2.to))}${p2.to === d.hero ? ' <span class="tag">you</span>' : ''}</span>
+          <span class="flow-bar"><i style="width:${Math.max(2, 100 * p2.v / maxV).toFixed(1)}%"></i></span>
+          <span class="flow-amt">${num(p2.v)}${bb ? ` <span class="muted">(${Math.round(p2.v / bb)} bb)</span>` : ''}</span>
+        </div>`;
+      }).join('');
+      html += `</div><div class="ins-note">Net chips from one player to another (each pot's losses split among its winners by share). Pipelines under 5 bb are hidden.</div></section>`;
+    }
+
+    $('#ins-root').innerHTML = html || '<div class="muted" style="padding:20px">Nothing to compute yet.</div>';
+  }
+
+  // ---------- hands ----------
+  let handsTimer;
+  ['#f-player', '#f-minpot'].forEach(sel => $(sel).addEventListener('input', () => { clearTimeout(handsTimer); handsTimer = setTimeout(loadHands, 200); }));
+  $('#f-showdown').addEventListener('change', loadHands);
+  $('#f-involve').addEventListener('change', loadHands);
+  $('#f-clear').addEventListener('click', () => { $('#f-player').value = ''; $('#f-minpot').value = ''; $('#f-showdown').checked = false; $('#f-involve').value = ''; state.filterPlayer = ''; renderPlayers(); loadHands(); });
+
+  async function loadHands() {
+    const q = new URLSearchParams();
+    const playerText = $('#f-player').value.trim();
+    if (playerText) q.set('player', state.filterPlayer && short(state.filterPlayer) === playerText ? state.filterPlayer : playerText);
+    $('#f-involve').classList.toggle('hidden', !playerText);
+    if (!playerText) $('#f-involve').value = '';
+    const inv = $('#f-involve').value; if (playerText && inv) q.set('involvement', inv);
+    const mp = parseInt($('#f-minpot').value, 10); if (mp > 0) q.set('min_pot', mp);
+    if ($('#f-showdown').checked) q.set('showdown', 'true');
+    q.set('limit', 5000);
+    const data = await api(`/api/sessions/${state.sid}/hands?` + q.toString());
+    state.hands = data.hands;
+    state.handsPage = 1;
+    $('#hands-count').textContent = `${data.total} hand${data.total === 1 ? '' : 's'}`;
+    renderHands();
+  }
+
+  function focusPlayer() {
+    // whose net to show: the filtered player, else the hero (log owner)
+    if (state.filterPlayer) return state.filterPlayer;
+    return state.hero;
+  }
+  function focusNet(h, focus) {
+    if (!focus) return null;
+    if (h.net && focus in h.net) return h.net[focus];
+    if (state.hero && focus === state.hero) return h.hero_net;
+    return null;
+  }
+  const PRE_LABEL = (n) => n == null ? '–' : n === 0 ? 'limp' : n === 1 ? 'raised' : n === 2 ? '3-bet' : `${n + 1}-bet`;
+
+  const HANDS_PER_PAGE = 15;
+  function renderHands() {
+    const focus = focusPlayer();
+    const { key, dir } = state.handsSort;
+    const val = (h) => key === 'net' ? focusNet(h, focus) : key === 'players' ? h.players.length : key === 'pre' ? h.preflop_raises : h[key];
+    const sorted = [...state.hands].sort((a, b) => {
+      const av = val(a), bv = val(b);
+      if (av == null && bv == null) return a.number - b.number;
+      if (av == null) return 1; if (bv == null) return -1;
+      return (av - bv) * dir || (a.number - b.number);
+    });
+    const pages = Math.max(1, Math.ceil(sorted.length / HANDS_PER_PAGE));
+    state.handsPage = Math.min(Math.max(1, state.handsPage || 1), pages);
+    const start = (state.handsPage - 1) * HANDS_PER_PAGE;
+    const rows = sorted.slice(start, start + HANDS_PER_PAGE);
+    const pager = $('#hands-pager');
+    if (sorted.length > HANDS_PER_PAGE) {
+      pager.innerHTML = `<span class="muted">${start + 1}–${Math.min(start + HANDS_PER_PAGE, sorted.length)} of ${sorted.length}</span>
+        <button class="ghost" id="pg-prev" ${state.handsPage <= 1 ? 'disabled' : ''}>‹ Prev</button>
+        <button class="ghost" id="pg-next" ${state.handsPage >= pages ? 'disabled' : ''}>Next ›</button>`;
+      $('#pg-prev').addEventListener('click', () => { state.handsPage--; renderHands(); });
+      $('#pg-next').addEventListener('click', () => { state.handsPage++; renderHands(); });
+    } else pager.innerHTML = '';
+    const cols = [['number', '#', ''], ['pot', 'Pot', ''], ['net', focus ? `Net · ${esc(short(focus))}` : null, ''], [null, focus ? `Cards · ${esc(short(focus))}` : null, 'center'], ['pre', 'Preflop', ''], [null, 'Board', 'center'], [null, 'Winner(s)', 'center'], ['players', 'Pl', '']];
+    $('#hands thead').innerHTML = '<tr>' + cols.map(([k, l, cl]) => l === null ? '' : (k
+      ? `<th data-k="${k}" class="${k === key ? 'sorted' : ''} ${cl}">${l}${k === key ? (dir < 0 ? ' ▼' : ' ▲') : ''}</th>`
+      : `<th class="${cl}">${l}</th>`)).join('') + '</tr>';
+    $('#hands tbody').innerHTML = rows.map(h => {
+      const tags = (h.all_in ? '<span class="tag">all-in</span>' : '') + (h.bomb_pot ? '<span class="tag">bomb</span>' : '') + (h.double_board ? '<span class="tag">2 boards</span>' : '') + (h.run_it_twice ? '<span class="tag">RIT</span>' : '') + (h.chip_mismatch ? '<span class="tag neg">±' + h.chip_mismatch + '</span>' : '');
+      const nv = focusNet(h, focus);
+      const netCell = focus ? `<td class="${cls(nv)}">${nv == null ? '<span class="muted">–</span>' : signed(nv)}</td>` : '';
+      const focusCards = focus ? ((h.known_cards && h.known_cards[focus]) || (focus === state.hero ? h.hero_cards : null)) : null;
+      const cardsCell = focus ? `<td class="center">${focusCards && focusCards.length ? cardsHtml(focusCards, 'lg') : '<span class="muted">–</span>'}</td>` : '';
+      const pre = `<td><span class="muted">${PRE_LABEL(h.preflop_raises)}</span>${h.showdown ? ' <span class="tag">SD</span>' : ''}</td>`;
+      const winnersHtml = h.winners.map(w => {
+        const wc = h.known_cards && h.known_cards[w];
+        return `<div style="line-height:2.1"><b>${esc(short(w))}</b>${wc && wc.length ? ` ${cardsHtml(wc, 'lg')}` : ''}</div>`;
+      }).join('');
+      return `<tr data-n="${h.number}" class="${state.selectedHand === h.number ? 'active' : ''}">
+        <td>${h.number}${tags}</td><td>${num(h.pot)}${h.pot_bb != null ? ` <span class="muted">(${h.pot_bb}bb)</span>` : ''}</td>${netCell}${cardsCell}${pre}
+        <td class="center board-cell">${boardHtml(h.board, 'lg') || '<span class="muted">–</span>'}</td>
+        <td class="center">${winnersHtml}</td><td>${h.players.length}</td></tr>`;
+    }).join('');
+        $('#hands thead').querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
+      const k = th.dataset.k;
+      state.handsSort = { key: k, dir: state.handsSort.key === k ? -state.handsSort.dir : (k === 'number' ? 1 : -1) };
+      state.handsPage = 1;
+      renderHands();
+    }));
+    $('#hands tbody').querySelectorAll('tr[data-n]').forEach(tr => tr.addEventListener('click', () => showHand(+tr.dataset.n)));
+    renderReplayRow();
+  }
+
+  function markActiveRow() {
+    $('#hands tbody').querySelectorAll('tr[data-n]').forEach(tr => tr.classList.toggle('active', +tr.dataset.n === state.selectedHand));
+  }
+
+  function renderReplayRow() {
+    const oldRow = $('#hands tbody .replay-row'); if (oldRow) oldRow.remove();
+    if (state.selectedHand == null || !state.replayHtml) return;
+    const anchor = $('#hands tbody tr[data-n="' + state.selectedHand + '"]');
+    if (!anchor) return;
+    const cols = $('#hands thead').querySelectorAll('th').length;
+    const tr = document.createElement('tr');
+    tr.className = 'replay-row';
+    tr.innerHTML = `<td colspan="${cols}"><div class="replay">${state.replayHtml}</div></td>`;
+    anchor.after(tr);
+    wireReplay();
+    renderRp();
+  }
+
+  // ---- step-through replayer ----
+  function rpDescribe(step, st) {
+    if (!step) return '';
+    if (step.kind === 'street') return `<b>${step.street.toUpperCase()}</b> — dealer turns ${cardsHtml(step.cards, 'sm')}`;
+    if (step.kind === 'end') return '';
+    const a = step.a, who = `<b>${esc(short(a.player))}</b>`;
+    const amt = (v) => `<b>${num(v)}</b>`;
+    const allin = a.all_in ? ' <span class="allin-pill">ALL-IN</span>' : '';
+    switch (a.type) {
+      case 'small_blind': return `${who} posts the small blind ${amt(a.amount)}`;
+      case 'big_blind': return `${who} posts the big blind ${amt(a.amount)}`;
+      case 'straddle': return `${who} straddles ${amt(a.amount)}`;
+      case 'missed_small_blind': return `${who} posts a dead small blind ${amt(a.amount)}`;
+      case 'missed_big_blind': return `${who} posts the missed big blind ${amt(a.amount)}`;
+      case 'ante': return `${who} posts ante ${amt(a.amount)}`;
+      case 'bomb_pot': return `${who} posts the bomb pot ${amt(a.amount)}`;
+      case 'check': return `${who} checks`;
+      case 'fold': return `${who} folds`;
+      case 'call': return `${who} calls ${amt(a.to_amount ?? a.amount)}${allin}`;
+      case 'bet': return `${who} bets ${amt(a.to_amount ?? a.amount)}${allin}`;
+      case 'raise': return `${who} raises to ${amt(a.to_amount)}${allin}`;
+      case 'uncalled_return': return `${amt(a.amount)} uncalled, returned to ${who}`;
+      case 'show': return `${who} shows ${cardsHtml(a.cards, 'sm')}`;
+      case 'muck': return `${who} mucks`;
+      case 'collect': return `🏆 ${who} wins ${amt(a.amount)}${a.hand_desc ? ` with <b>${esc(a.hand_desc)}</b>` : ''}`;
+      default: return `${who} ${esc(a.type)}`;
+    }
+  }
+
+  function rpStateAt(i) {
+    const { hand: h, steps } = state.rp;
+    const stt = { pot: 0, board: [], street: 'preflop', inFront: {}, folded: {}, spent: {}, got: {}, allin: {}, shown: {}, winners: {}, done: false };
+    for (let k = 0; k <= i && k < steps.length; k++) {
+      const step = steps[k];
+      if (step.kind === 'street') { stt.board = stt.board.concat(step.cards); stt.street = step.street; stt.inFront = {}; continue; }
+      if (step.kind === 'end') { stt.done = true; continue; }
+      const a = step.a, p = a.player;
+      if (a.type === 'fold') stt.folded[p] = true;
+      else if (a.type === 'uncalled_return') { stt.pot -= a.amount || 0; stt.spent[p] = (stt.spent[p] || 0) - (a.amount || 0); stt.inFront[p] = (stt.inFront[p] || 0) - (a.amount || 0); }
+      else if (a.type === 'collect') { stt.got[p] = (stt.got[p] || 0) + (a.amount || 0); stt.winners[p] = a.hand_desc || true; }
+      else if (a.type === 'show') stt.shown[p] = [...(stt.shown[p] || []), ...(a.cards || []).filter(c => !(stt.shown[p] || []).includes(c))];
+      else if (a.amount != null) { stt.pot += a.amount; stt.spent[p] = (stt.spent[p] || 0) + a.amount; stt.inFront[p] = (stt.inFront[p] || 0) + a.amount; }
+      if (a.all_in) stt.allin[p] = true;
+    }
+    return stt;
+  }
+
+  function renderRp() {
+    if (!state.rp) return;
+    const { hand: h, steps, i } = state.rp;
+    const pods = document.getElementById('rp-pods');
+    if (!pods) return;
+    const stt = rpStateAt(i);
+    const cur = steps[i];
+    const actor = cur && cur.kind === 'act' && !['collect', 'show', 'uncalled_return'].includes(cur.a.type) ? cur.a.player : null;
+    // seat order from left of dealer
+    let seats = [...h.seats];
+    const di = seats.findIndex(s => s.player === h.dealer);
+    if (di >= 0) seats = [...seats.slice(di + 1), ...seats.slice(0, di + 1)];
+    pods.innerHTML = seats.map(seat => {
+      const p = seat.player;
+      const perspective = p === state.filterPlayer || (h.hero && p === h.hero) || state.rpPeek[p];
+      const known = state.rpShowAll
+        ? ((stt.shown[p]) || (h.known_cards && h.known_cards[p]))
+        : ((perspective ? (h.known_cards && h.known_cards[p]) || (p === h.hero ? h.hero_cards : null) : null) || stt.shown[p]);
+      const back = known && known.length ? cardsHtml(known, 'lg') : '<span class="pcard back lg">?</span><span class="pcard back lg">?</span>';
+      const pos = p === h.dealer ? '<span class="pos btn">D</span>' : (h.actions.some(a => a.player === p && a.type === 'small_blind') ? '<span class="pos">SB</span>' : h.actions.some(a => a.player === p && a.type === 'big_blind') ? '<span class="pos">BB</span>' : '');
+      const stack = seat.stack - (stt.spent[p] || 0) + (stt.got[p] || 0);
+      const inF = stt.inFront[p] || 0;
+      const isAgg = cur && cur.kind === 'act' && cur.a.player === p && ['bet', 'raise'].includes(cur.a.type);
+      const won = stt.done && stt.got[p] > 0;
+      let status = '';
+      if (stt.done) status = `${won ? '🏆 ' : ''}<span class="${cls((h.net[p] ?? 0))}">${signed(h.net[p] ?? 0)}</span>`;
+      else if (stt.folded[p]) status = '<span class="muted" style="font-weight:400">folded</span>';
+      else if (inF > 0) status = `<span class="bubble${isAgg ? ' agg' : ''}">${num(inF)}${stt.allin[p] ? ' <span class="allin-pill">ALL-IN</span>' : ''}</span>`;
+      return `<div class="rp-pod${stt.folded[p] ? ' folded' : ''}${actor === p ? ' actor' : ''}${won ? ' win' : ''}${!state.rpShowAll ? ' peekable' : ''}" data-p="${esc(p)}" ${!state.rpShowAll ? 'title="click to peek at this player\'s cards"' : ''}>
+        <div class="top"><div class="cards">${back}</div><div class="info"><div class="nm">${pos}${esc(short(p))}</div><div class="stk">${num(stack)}</div></div></div>
+        <div class="status">${status}</div>
+      </div>`;
+    }).join('');
+    if (!state.rpShowAll) pods.querySelectorAll('.rp-pod').forEach(el => el.addEventListener('click', () => {
+      const p = el.dataset.p;
+      state.rpPeek[p] = !state.rpPeek[p];
+      renderRp();
+    }));
+    document.getElementById('rp-street').textContent = stt.done ? 'result' : stt.street;
+    document.getElementById('rp-board').innerHTML = boardHtml(stt.board, 'xl') || '<span class="muted" style="font-size:15px">— no cards yet —</span>';
+    const bbv = h.big_blind ? `<small>${(stt.pot / h.big_blind).toFixed(1)} bb</small>` : '';
+    document.getElementById('rp-pot').innerHTML = `Pot ${num(stt.pot)}${bbv}`;
+    const sa = document.getElementById('rp-showall'); if (sa) sa.checked = !!state.rpShowAll;
+    let cap = rpDescribe(cur, stt);
+    if (cur && cur.kind === 'end') {
+      cap = Object.keys(stt.winners).map(w => `🏆 <b>${esc(short(w))}</b> +${num(stt.got[w])}${typeof stt.winners[w] === 'string' ? ` — ${esc(stt.winners[w])}` : ''}`).join(' · ') || 'Hand complete';
+    }
+    document.getElementById('rp-caption').innerHTML = (cap || '<span class="muted">Press ▶ or Play to step through the hand</span>') + `<span class="stepno">${i + 1}/${steps.length}</span>`;
+    const sl = document.getElementById('rp-slider'); if (sl) sl.value = i;
+    const pb = document.getElementById('rp-play'); if (pb) pb.textContent = state.rpTimer ? 'Pause' : 'Play';
+  }
+
+  function rpGo(i, stopPlay = true) {
+    if (!state.rp) return;
+    if (stopPlay && state.rpTimer) { clearInterval(state.rpTimer); state.rpTimer = null; }
+    state.rp.i = Math.max(0, Math.min(state.rp.steps.length - 1, i));
+    renderRp();
+  }
+
+  function wireReplay() {
+    const g = (id) => document.getElementById(id);
+    if (!g('rp-first')) return;
+    g('rp-showall').onchange = (e) => { state.rpShowAll = e.target.checked; try { localStorage.setItem('rpShowAll', state.rpShowAll ? '1' : '0'); } catch {} renderRp(); };
+    g('rp-first').onclick = () => rpGo(0);
+    g('rp-prev').onclick = () => rpGo(state.rp.i - 1);
+    g('rp-next').onclick = () => rpGo(state.rp.i + 1);
+    g('rp-last').onclick = () => rpGo(state.rp.steps.length - 1);
+    g('rp-slider').oninput = (e) => rpGo(+e.target.value);
+    g('rp-play').onclick = () => {
+      if (state.rpTimer) { clearInterval(state.rpTimer); state.rpTimer = null; renderRp(); return; }
+      if (state.rp.i >= state.rp.steps.length - 1) state.rp.i = 0;
+      state.rpTimer = setInterval(() => {
+        if (!state.rp || state.rp.i >= state.rp.steps.length - 1) { clearInterval(state.rpTimer); state.rpTimer = null; renderRp(); return; }
+        rpGo(state.rp.i + 1, false);
+      }, 1100);
+      renderRp();
+    };
+  }
+  document.addEventListener('keydown', (e) => {
+    if (!state.rp || state.selectedHand == null) return;
+    if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); rpGo(state.rp.i + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); rpGo(state.rp.i - 1); }
+  });
+
+  async function showHand(n) {
+    if (state.selectedHand === n) {  // second click collapses
+      if (state.rpTimer) { clearInterval(state.rpTimer); state.rpTimer = null; }
+      state.rp = null;
+      state.selectedHand = null; state.replayHtml = null;
+      renderReplayRow(); markActiveRow(); return;
+    }
+    await openHand(n);
+  }
+
+  async function openHand(n) {
+    state.selectedHand = n;
+    const h = await api(`/api/sessions/${state.sid}/hands/${n}`);
+    // ---- build the timeline: one step per event, plus a step for each street's cards ----
+    const steps = [];
+    const STREETS = ['preflop', 'flop', 'turn', 'river', 'showdown'];
+    const newCards = { flop: h.board.slice(0, 3), turn: h.board.slice(3, 4), river: h.board.slice(4, 5) };
+    let seenStreet = 'preflop';
+    for (const a of h.actions) {
+      while (seenStreet !== a.street) {
+        const nxt = STREETS[STREETS.indexOf(seenStreet) + 1];
+        if (!nxt) break;
+        seenStreet = nxt;
+        if (newCards[nxt] && newCards[nxt].length) steps.push({ kind: 'street', street: nxt, cards: newCards[nxt] });
+      }
+      steps.push({ kind: 'act', a });
+    }
+    steps.push({ kind: 'end' });
+    state.rp = { hand: h, steps, i: 0 };
+    state.rpPeek = {};
+    if (state.rpTimer) { clearInterval(state.rpTimer); state.rpTimer = null; }
+
+    let html = `<h3>Hand #${h.number} <span class="pill">${esc(h.game_type)}</span>${h.bomb_pot ? ' <span class="pill">bomb pot</span>' : ''}${h.double_board ? ' <span class="pill">double board</span>' : ''}${h.run_it_twice ? ' <span class="pill">run it twice</span>' : ''}</h3>`;
+    html += `<div class="rp">
+      <div class="rp-pods" id="rp-pods"></div>
+      <div class="rp-center">
+        <label class="rp-toggle" title="On: every known hole card is face-up for the whole replay. Off: only the player you filtered (or you, when logged in) — click any player to peek."><input type="checkbox" id="rp-showall"> all cards face-up</label>
+        <span class="street-lbl" id="rp-street"></span><span id="rp-board"></span><span class="pot-lbl" id="rp-pot"></span>
+      </div>
+      <div class="rp-controls">
+        <button id="rp-first" title="Start">⏮</button>
+        <button id="rp-prev" title="Back (←)">◀</button>
+        <input type="range" id="rp-slider" min="0" max="${steps.length - 1}" value="0">
+        <button id="rp-next" title="Next (→)">▶</button>
+        <button id="rp-last" title="End">⏭</button>
+        <button id="rp-play" class="primary" title="Auto-play">Play</button>
+      </div>
+      <div class="rp-caption" id="rp-caption"></div>
+    </div>`;
+    if (h.board_runs && h.board_runs.length > 1) {
+      const word = h.double_board ? 'Board' : 'Run';
+      html += `<div style="margin-top:10px;text-align:center">` + h.board_runs.map((r, i) => `<span style="margin-right:18px"><span class="muted">${word} ${i + 1}</span> ${boardHtml(r, 'sm')}</span>`).join('') + `</div>`;
+    }
+    if (h.undealt_cards && h.undealt_cards.some(r => r.length)) html += `<div style="margin-top:8px;text-align:center" class="muted">Rabbit hunt: ${h.undealt_cards.map(r => boardHtml(r, 'sm')).join(' ')}</div>`;
+    state.replayHtml = html;
+    renderReplayRow(); markActiveRow();
+  }
+
+  // ---------- boot ----------
+  (async () => {
+    await refreshSessionList();
+    await refreshArchives();
+    const hash = location.hash.slice(1);
+    if (hash) { try { await loadSession(hash); } catch {} }
+    else { const list = await api('/api/sessions'); if (list.length) await loadSession(list[0].id); }
+  })();
+})();
+</script>
+</body>
+</html>

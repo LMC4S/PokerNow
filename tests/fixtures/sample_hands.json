@@ -1,0 +1,531 @@
+{
+ "generatedAt": "2024-03-10T21:00:00.000Z",
+ "playerId": "aaa111",
+ "gameId": "gameXYZ123",
+ "hands": [
+  {
+   "id": "j1",
+   "handVersion": 2,
+   "number": "1",
+   "gameType": "th",
+   "cents": false,
+   "smallBlind": 5,
+   "bigBlind": 10,
+   "ante": null,
+   "straddleSeat": null,
+   "dealerSeat": 1,
+   "startedAt": 1710100000000,
+   "bombPot": false,
+   "sevenDeuceBounty": null,
+   "doubleBoard": null,
+   "players": [
+    {
+     "id": "aaa111",
+     "seat": 1,
+     "name": "Alice",
+     "stack": 1000,
+     "hand": [
+      "Ah",
+      "Kd"
+     ]
+    },
+    {
+     "id": "bbb222",
+     "seat": 2,
+     "name": "Bob",
+     "stack": 1000
+    },
+    {
+     "id": "ccc333",
+     "seat": 3,
+     "name": "Carol Smith",
+     "stack": 1000
+    }
+   ],
+   "events": [
+    {
+     "at": 1710100000001,
+     "payload": {
+      "type": 3,
+      "seat": 2,
+      "value": 5
+     }
+    },
+    {
+     "at": 1710100000002,
+     "payload": {
+      "type": 2,
+      "seat": 3,
+      "value": 10
+     }
+    },
+    {
+     "at": 1710100000003,
+     "payload": {
+      "type": 7,
+      "seat": 1,
+      "value": 10
+     }
+    },
+    {
+     "at": 1710100000004,
+     "payload": {
+      "type": 7,
+      "seat": 2,
+      "value": 10
+     }
+    },
+    {
+     "at": 1710100000005,
+     "payload": {
+      "type": 0,
+      "seat": 3
+     }
+    },
+    {
+     "at": 1710100000006,
+     "payload": {
+      "type": 9,
+      "turn": 1,
+      "run": 1,
+      "cards": [
+       "As",
+       "7d",
+       "2c"
+      ],
+      "handsLabels": {}
+     }
+    },
+    {
+     "at": 1710100000007,
+     "payload": {
+      "type": 0,
+      "seat": 2
+     }
+    },
+    {
+     "at": 1710100000008,
+     "payload": {
+      "type": 0,
+      "seat": 3
+     }
+    },
+    {
+     "at": 1710100000009,
+     "payload": {
+      "type": 7,
+      "seat": 1,
+      "value": 10
+     }
+    },
+    {
+     "at": 1710100000010,
+     "payload": {
+      "type": 8,
+      "seat": 2,
+      "value": 40
+     }
+    },
+    {
+     "at": 1710100000011,
+     "payload": {
+      "type": 11,
+      "seat": 3
+     }
+    },
+    {
+     "at": 1710100000012,
+     "payload": {
+      "type": 7,
+      "seat": 1,
+      "value": 40
+     }
+    },
+    {
+     "at": 1710100000013,
+     "payload": {
+      "type": 9,
+      "turn": 2,
+      "run": 1,
+      "cards": [
+       "Tc"
+      ],
+      "handsLabels": {}
+     }
+    },
+    {
+     "at": 1710100000014,
+     "payload": {
+      "type": 0,
+      "seat": 2
+     }
+    },
+    {
+     "at": 1710100000015,
+     "payload": {
+      "type": 1,
+      "seat": 1,
+      "value": 50
+     }
+    },
+    {
+     "at": 1710100000016,
+     "payload": {
+      "type": 11,
+      "seat": 2
+     }
+    },
+    {
+     "at": 1710100000017,
+     "payload": {
+      "type": 16,
+      "seat": 1,
+      "value": 50
+     }
+    },
+    {
+     "at": 1710100000018,
+     "payload": {
+      "type": 10,
+      "seat": 1,
+      "value": 110,
+      "pot": 110,
+      "position": 1
+     }
+    },
+    {
+     "at": 1710100000019,
+     "payload": {
+      "type": 15
+     }
+    },
+    {
+     "at": 1710100000020,
+     "payload": {
+      "type": 12,
+      "seat": 1,
+      "cards": [
+       null,
+       "Kd"
+      ]
+     }
+    },
+    {
+     "at": 1710100000021,
+     "payload": {
+      "type": 12,
+      "seat": 1,
+      "cards": [
+       "Ah",
+       null
+      ]
+     }
+    }
+   ],
+   "playerNet": 60
+  },
+  {
+   "id": "j2",
+   "handVersion": 2,
+   "number": "2",
+   "gameType": "th",
+   "cents": false,
+   "smallBlind": 5,
+   "bigBlind": 10,
+   "ante": null,
+   "straddleSeat": null,
+   "dealerSeat": 2,
+   "startedAt": 1710100060000,
+   "bombPot": true,
+   "sevenDeuceBounty": null,
+   "doubleBoard": true,
+   "players": [
+    {
+     "id": "aaa111",
+     "seat": 1,
+     "name": "Alice",
+     "stack": 1080,
+     "hand": [
+      "9h",
+      "9d"
+     ]
+    },
+    {
+     "id": "bbb222",
+     "seat": 2,
+     "name": "Bob",
+     "stack": 950
+    },
+    {
+     "id": "ccc333",
+     "seat": 3,
+     "name": "Carol Smith",
+     "stack": 970
+    }
+   ],
+   "events": [
+    {
+     "at": 1710100060001,
+     "payload": {
+      "type": 1,
+      "seat": 1,
+      "value": 20,
+      "bombPot": true
+     }
+    },
+    {
+     "at": 1710100060002,
+     "payload": {
+      "type": 7,
+      "seat": 2,
+      "value": 20,
+      "bombPot": true
+     }
+    },
+    {
+     "at": 1710100060003,
+     "payload": {
+      "type": 7,
+      "seat": 3,
+      "value": 20,
+      "bombPot": true
+     }
+    },
+    {
+     "at": 1710100060004,
+     "payload": {
+      "type": 9,
+      "turn": 1,
+      "run": 1,
+      "cards": [
+       "9s",
+       "4c",
+       "2d"
+      ],
+      "handsLabels": {}
+     }
+    },
+    {
+     "at": 1710100060005,
+     "payload": {
+      "type": 9,
+      "turn": 1,
+      "run": 2,
+      "cards": [
+       "Kh",
+       "Qh",
+       "Jh"
+      ],
+      "handsLabels": {}
+     }
+    },
+    {
+     "at": 1710100060006,
+     "payload": {
+      "type": 0,
+      "seat": 2
+     }
+    },
+    {
+     "at": 1710100060007,
+     "payload": {
+      "type": 0,
+      "seat": 3
+     }
+    },
+    {
+     "at": 1710100060008,
+     "payload": {
+      "type": 0,
+      "seat": 1
+     }
+    },
+    {
+     "at": 1710100060009,
+     "payload": {
+      "type": 9,
+      "turn": 2,
+      "run": 1,
+      "cards": [
+       "5s"
+      ],
+      "handsLabels": {}
+     }
+    },
+    {
+     "at": 1710100060010,
+     "payload": {
+      "type": 9,
+      "turn": 2,
+      "run": 2,
+      "cards": [
+       "3c"
+      ],
+      "handsLabels": {}
+     }
+    },
+    {
+     "at": 1710100060011,
+     "payload": {
+      "type": 0,
+      "seat": 2
+     }
+    },
+    {
+     "at": 1710100060012,
+     "payload": {
+      "type": 0,
+      "seat": 3
+     }
+    },
+    {
+     "at": 1710100060013,
+     "payload": {
+      "type": 0,
+      "seat": 1
+     }
+    },
+    {
+     "at": 1710100060014,
+     "payload": {
+      "type": 9,
+      "turn": 3,
+      "run": 1,
+      "cards": [
+       "6d"
+      ],
+      "handsLabels": {}
+     }
+    },
+    {
+     "at": 1710100060015,
+     "payload": {
+      "type": 9,
+      "turn": 3,
+      "run": 2,
+      "cards": [
+       "Th"
+      ],
+      "handsLabels": {}
+     }
+    },
+    {
+     "at": 1710100060016,
+     "payload": {
+      "type": 0,
+      "seat": 2
+     }
+    },
+    {
+     "at": 1710100060017,
+     "payload": {
+      "type": 0,
+      "seat": 3
+     }
+    },
+    {
+     "at": 1710100060018,
+     "payload": {
+      "type": 0,
+      "seat": 1
+     }
+    },
+    {
+     "at": 1710100060019,
+     "payload": {
+      "type": 15
+     }
+    },
+    {
+     "at": 1710100060020,
+     "payload": {
+      "type": 12,
+      "seat": 1,
+      "cards": [
+       "9h",
+       "9d"
+      ]
+     }
+    },
+    {
+     "at": 1710100060021,
+     "payload": {
+      "type": 12,
+      "seat": 2,
+      "cards": [
+       "Ah",
+       "2h"
+      ]
+     }
+    },
+    {
+     "at": 1710100060022,
+     "payload": {
+      "type": 12,
+      "seat": 3,
+      "cards": [
+       "7c",
+       "8c"
+      ]
+     }
+    },
+    {
+     "at": 1710100060023,
+     "payload": {
+      "type": 10,
+      "seat": 1,
+      "value": 28,
+      "pot": 28,
+      "position": 1,
+      "runNumber": "1",
+      "cards": [
+       "9h",
+       "9d"
+      ],
+      "combination": [
+       "9h",
+       "9d",
+       "9s",
+       "6d",
+       "5s"
+      ],
+      "handDescription": "Three of a Kind, 9's",
+      "hiLo": "h"
+     }
+    },
+    {
+     "at": 1710100060024,
+     "payload": {
+      "type": 10,
+      "seat": 2,
+      "value": 29,
+      "pot": 29,
+      "position": 1,
+      "runNumber": "2",
+      "cards": [
+       "Ah",
+       "2h"
+      ],
+      "combination": [
+       "Ah",
+       "Kh",
+       "Qh",
+       "Jh",
+       "Th"
+      ],
+      "handDescription": "Royal Flush",
+      "hiLo": "h"
+     }
+    },
+    {
+     "at": 1710100060025,
+     "payload": {
+      "type": 19,
+      "value": 3
+     }
+    }
+   ],
+   "playerNet": 8
+  }
+ ]
+}
